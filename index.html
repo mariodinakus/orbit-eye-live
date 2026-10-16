@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#070c13" />
+  <meta name="description" content="ORBIT EYE — Live orbital tracking, 3D Earth, Earth observation, satellite owners, footprints and orbital analytics." />
+  <title>ORBIT EYE — The Earth From Above</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin />
+  <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin />
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="/src/styles.css" rel="stylesheet" />
+  <script defer src="https://cdn.jsdelivr.net/npm/globe.gl@2.45.0/dist/globe.gl.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <div class="ambient glow-one"></div><div class="ambient glow-two"></div>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-orb"><span></span></div><div class="brand-text"><strong>ORBIT<span>EYE</span></strong><small>EARTH INTELLIGENCE PLATFORM</small></div></div>
+      <div class="top-center"><span class="live-dot"></span><span data-i18n="liveTracking">LIVE ORBITAL TRACKING</span><span class="header-separator"></span><span id="utcTime" class="mono">--:--:-- UTC</span></div>
+      <div class="top-actions"><button class="utility-button" id="langButton" aria-label="Language">EN</button><button class="utility-button" id="helpButton" aria-label="Help" title="About the data">ⓘ</button><a class="top-link" href="https://celestrak.org/" target="_blank" rel="noopener">CELESTRAK <span>↗</span></a></div>
+    </header>
+    <div class="ticker"><div class="ticker-label"><span class="ticker-pulse"></span> <span data-i18n="missionControl">MISSION CONTROL</span></div><div class="ticker-inner" id="ticker">Syncing with orbital catalog · Computed satellite positions from orbital elements · Ground imaging is not live video</div><div class="ticker-tag" id="dataStatus">CONNECTING</div></div>
+    <main class="workspace">
+      <aside class="sidebar">
+        <div class="section-heading"><div><div class="eyebrow" data-i18n="explore">EXPLORE THE CONSTELLATIONS</div><h2 data-i18n="satelliteExplorer">Satellite explorer</h2></div><span class="small-chip" id="totalCount">—</span></div>
+        <div class="search-wrap"><span class="search-icon">⌕</span><input id="satSearch" type="search" placeholder="Satellite name or NORAD ID" autocomplete="off" aria-label="Search satellites"/><kbd>⌘ K</kbd></div>
+        <div class="menu-heading"><span data-i18n="collections">COLLECTIONS</span><span id="collectionCount">09</span></div>
+        <div class="collections" id="collections">
+          <button class="collection active" data-group="featured"><span class="collection-icon" style="--t:#77e5c4">◈</span><span data-i18n="featured">Discovery mix</span><span class="collection-right">↗</span></button>
+          <button class="collection" data-group="stations"><span class="collection-icon" style="--t:#ffc979">▣</span><span data-i18n="stations">Space stations</span></button>
+          <button class="collection" data-group="weather"><span class="collection-icon" style="--t:#7bc9ff">◉</span><span data-i18n="weather">Weather satellites</span></button>
+          <button class="collection" data-group="resource"><span class="collection-icon" style="--t:#bb9eff">▤</span><span data-i18n="earthObs">Earth observation</span></button>
+          <button class="collection" data-group="science"><span class="collection-icon" style="--t:#ef98da">✳</span><span data-i18n="science">Scientific missions</span></button>
+          <button class="collection" data-group="gps-ops"><span class="collection-icon" style="--t:#ffbd83">⌾</span><span>GPS</span></button>
+          <button class="collection" data-group="galileo"><span class="collection-icon" style="--t:#aad7ff">◇</span><span>Galileo</span></button>
+          <button class="collection" data-group="starlink"><span class="collection-icon" style="--t:#7fdad8">⌁</span><span>Starlink</span></button>
+          <button class="collection" data-group="oneweb"><span class="collection-icon" style="--t:#ffc798">⊕</span><span>OneWeb</span></button>
+          <button class="collection" data-group="iridium-NEXT"><span class="collection-icon" style="--t:#b3b5ff">⟁</span><span>Iridium NEXT</span></button>
+        </div>
+        <div class="results-header"><div class="menu-heading"><span data-i18n="trackedObjects">TRACKED OBJECTS</span><span id="resultCount">—</span></div><div class="mini-filter"><button class="sort-choice active" data-sort="altitude" id="sortAltitude" data-i18n="altitude">ALTITUDE</button><button class="sort-choice" data-sort="name" id="sortName">A–Z</button></div></div>
+        <div id="satList" class="sat-list" aria-live="polite"><div class="empty-state">Fetching orbital data…</div></div>
+        <div class="sidebar-bottom"><div class="tiny-status"><span class="status-blink"></span><span data-i18n="orbitEngine">SGP4 ORBIT ENGINE</span><span class="status-ready">● ACTIVE</span></div><div class="tiny-copy" id="sourceAge">TLE/OMM loading…</div></div>
+      </aside>
+      <section class="mainview">
+        <div class="globe-panel">
+          <div class="globe-canvas" id="globe"></div><div class="stars-overlay" aria-hidden="true"></div>
+          <div class="globe-header"><div><div class="eyebrow" data-i18n="realtimeEnvironment">REAL-TIME ORBITAL ENVIRONMENT</div><h1 data-i18n="earthInMotion">Earth, in motion<span class="heading-period">.</span></h1><p data-i18n="earthDesc">Watch spacecraft move above our planet, second by second.</p></div><div class="view-switch"><button id="globe3dBtn" class="active">◉ 3D</button><button id="map2dBtn">▤ 2D</button></div></div>
+          <div id="main2d" class="main2d hidden"></div><div class="globe-corners top-left"></div><div class="globe-corners top-right"></div><div class="globe-corners bottom-left"></div><div class="globe-corners bottom-right"></div>
+          <div class="globe-readouts"><div><div class="readout-label" data-i18n="trackingNow">TRACKING NOW</div><div class="readout-value"><strong id="liveCount">0</strong><span class="readout-suffix" data-i18n="satellites">SATELLITES</span></div></div><div><div class="readout-label" data-i18n="altitudeSelected">SELECTED ALTITUDE</div><div class="readout-value"><strong id="globeAltitude">—</strong><span class="readout-suffix">KM</span></div></div><div class="readout-right"><button class="small-action" id="resetView" data-i18n="resetView">↺ RESET VIEW</button><button class="small-action active" id="followBtn" data-i18n="follow">◎ FOLLOW</button></div></div>
+          <div class="globe-legend"><span><i class="legend-swatch mint"></i> <span data-i18n="selectedOrbit">Selected orbit</span></span><span><i class="legend-swatch blue"></i> <span data-i18n="fleet">Satellite fleet</span></span><span><i class="legend-swatch orange"></i> <span data-i18n="subsatellite">Sub-satellite point</span></span></div>
+        </div>
+        <div class="earth-panel">
+          <div class="earth-topline"><div><div class="eyebrow" data-i18n="lookDown">LOOKING DOWN FROM ORBIT</div><div class="earth-title-row"><h2><span class="view-eye">◉</span> <span data-i18n="satelliteEye">SATELLITE EYE</span></h2><span class="signal-pill" data-i18n="groundTrack">● LIVE POSITION</span></div></div><div class="layer-actions"><button class="layer-button active" data-layer="imagery" data-i18n="satelliteMap">SATELLITE MAP</button><button class="layer-button" data-layer="nasa" data-i18n="nasaImagery">NASA IMAGERY</button><button class="layer-button" data-layer="dark" data-i18n="nightMap">DARK MAP</button></div></div>
+          <div class="earth-main"><div id="surfaceMap" class="surface-map"></div><div class="surface-vignette"></div><div class="surface-overlay top"><span class="cross-dot"></span><span id="groundLabel">POINT DIRECTLY BELOW SPACECRAFT</span><span id="groundCoordinates" class="mono">—</span></div><div class="surface-overlay bottom"><div><strong id="surfacePlace">Earth · Ground track</strong><small id="imageAttribution">Esri world imagery · Not a live satellite camera</small></div><span class="map-crosshair">＋</span></div></div>
+          <div class="earth-bottom"><div class="notice-icon">ⓘ</div><div><strong data-i18n="truthTitle">What am I actually seeing?</strong><span data-i18n="truthCopy">A continuously updated position over satellite imagery, NOT a live camera feed from this spacecraft. Sensor coverage is only shown when documented.</span></div><button id="cameraJump" data-i18n="viewLiveFeeds">LIVE FEEDS ↗</button></div>
+        </div>
+      </section>
+      <aside class="inspector">
+        <div class="inspector-heading"><span class="eyebrow" data-i18n="objectDetails">OBJECT INTELLIGENCE</span><span class="outline-tag" id="satType">ORBITAL ASSET</span></div>
+        <div class="sat-top"><div class="sat-visual"><span class="sat-art">✧</span><div class="orbit-art"></div></div><div class="active-object"><div class="object-overline"><span class="live-dot"></span> <span data-i18n="currentlyTracked">CURRENTLY TRACKED</span></div><h2 id="detailName">Choose a satellite</h2><div class="object-serial">NORAD <span id="detailNorad">—</span> <span class="serial-sep">/</span> <span id="detailIntl">—</span></div></div></div>
+        <div class="status-strip"><span class="status-mark">●</span><span data-i18n="positionComputed">ORBIT POSITION COMPUTED</span><span id="dataAgeShort">—</span></div>
+        <div class="inspector-scroll">
+          <div class="stat-grid"><div class="stat"><span data-i18n="altitudeLabel">ALTITUDE</span><strong id="altDetail">—</strong><small>km</small></div><div class="stat"><span data-i18n="speedLabel">GROUND/ORBIT SPEED</span><strong id="speedDetail">—</strong><small>km/s (inertial)</small></div><div class="stat"><span data-i18n="inclination">INCLINATION</span><strong id="incDetail">—</strong><small>degrees</small></div><div class="stat"><span data-i18n="orbitalPeriod">ORBIT PERIOD</span><strong id="periodDetail">—</strong><small>minutes</small></div></div>
+          <div class="detail-section"><h3 data-i18n="ownership">OWNERSHIP & MISSION</h3><div class="detail-pair"><span data-i18n="ownerCountry">Owner / country</span><strong id="detailOwner">—</strong></div><div class="detail-pair"><span data-i18n="operator">Operator / company</span><strong id="detailOperator">—</strong></div><div class="detail-pair"><span data-i18n="mission">Mission type</span><strong id="detailMission">—</strong></div><div class="detail-pair"><span data-i18n="launch">Launch date</span><strong id="detailLaunch">—</strong></div></div>
+          <div class="detail-section"><h3 data-i18n="earthView">EARTH OBSERVATION</h3><div class="coverage-card"><div class="coverage-icon">◎</div><div><strong id="coverageTitle">Directly beneath satellite</strong><p id="coverageDescription">Sub-satellite ground point; actual camera field of view may differ.</p></div></div><div class="detail-pair"><span data-i18n="latitude">Latitude</span><strong id="detailLat">—</strong></div><div class="detail-pair"><span data-i18n="longitude">Longitude</span><strong id="detailLon">—</strong></div><div class="detail-pair"><span data-i18n="imagingSwath">Documented imaging swath</span><strong id="detailSwath">Not published</strong></div></div>
+          <div class="detail-section"><h3 data-i18n="source">ORBITAL ELEMENTS</h3><div class="detail-pair"><span>Epoch (UTC)</span><strong id="detailEpoch">—</strong></div><div class="detail-pair"><span data-i18n="satcatSource">Catalog ownership</span><strong id="detailProvenance">CelesTrak SATCAT</strong></div><p class="source-note" data-i18n="sourceNote">Positions are predictions (SGP4), not direct GPS telemetry. Old orbital elements reduce accuracy.</p></div>
+        </div>
+        <div class="inspector-bottom"><div class="feeder"><div><span class="eyebrow" data-i18n="actualFeeds">REAL LIVE EARTH FEEDS</span><strong>NASA ISS / EUMETSAT</strong></div><button id="feedsButton">↗</button></div><button class="follow-cta" id="followSatBtn"><span>⌖</span> <span data-i18n="lockTarget">LOCK ON TARGET</span><span>↗</span></button></div>
+      </aside>
+    </main>
+    <footer class="footer"><div><strong>ORBIT EYE</strong> / EARTH INTELLIGENCE <span class="footer-dot">·</span> <span data-i18n="disclaimer">Educational tracking · Not for navigation or collision avoidance</span></div><div>SGP4 / OMM <span class="footer-dot">·</span> CELESTRAK / SATCAT <span class="footer-dot">·</span> NASA / ESRI</div></footer>
+  </div>
+  <div class="modal-backdrop hidden" id="infoModal" role="dialog" aria-modal="true" aria-label="Data guide"><div class="modal"><button class="modal-close" data-close="infoModal">×</button><div class="eyebrow">ORBIT EYE // FIELD MANUAL</div><h2 data-i18n="understandingTitle">Understanding the live view</h2><div id="infoBody"></div><div class="modal-foot"><a href="https://celestrak.org/usage-policy.php" target="_blank" rel="noopener">CelesTrak data policy ↗</a><button class="modal-confirm" data-close="infoModal">OK, GOT IT</button></div></div></div>
+  <div class="modal-backdrop hidden" id="feedModal" role="dialog" aria-modal="true" aria-label="Live Earth feeds"><div class="modal video-modal"><button class="modal-close" data-close="feedModal">×</button><div class="eyebrow" data-i18n="verifiedVideo">PUBLIC VIDEO & SATELLITE IMAGE SOURCES</div><h2 data-i18n="liveVideoTitle">Actual views from space</h2><div class="live-feed-grid"><div class="real-feed"><div class="feed-tag">NASA · ISS VIDEO STREAM</div><div class="iframe-shell"><iframe src="https://www.youtube-nocookie.com/embed/aB1yRz0HhdY?autoplay=0&mute=1" title="NASA ISS live Earth camera" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><p data-i18n="issFeedCaution">NASA may show recorded footage when live signal is unavailable. The video is not synchronized to the computed ground track.</p><a target="_blank" rel="noopener" href="https://www.nasa.gov/live/">NASA LIVE ↗</a></div><div class="real-feed"><div class="feed-tag">EUMETSAT · METEOSAT</div><div class="eumetsat-orb">◌<span>EARTH VIEW</span></div><p data-i18n="meteosatCaution">Actual weather satellite imagery refreshed approximately every 10 minutes with an expected processing delay; not a continuous camera.</p><a target="_blank" rel="noopener" href="https://www.eumetsat.int/real-time-imagery/earth-view">EUMETSAT EARTH VIEW ↗</a><a target="_blank" rel="noopener" href="https://worldview.earthdata.nasa.gov/">NASA WORLDVIEW ↗</a></div></div></div></div>
+  <div id="toast" class="toast hidden" role="status"></div>
+</body>
+</html>

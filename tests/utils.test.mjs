@@ -1,0 +1,10 @@
+import {test} from 'node:test'; import {strict as assert} from 'node:assert';
+import {greatCircleCircle,getHorizonRadius,downsample,orbitPeriod,resolveOwner,documentedSwath,inferOperator,epochAgeHours} from '../src/utils.mjs';
+test('orbital period of 15 revolutions/day is 96 minutes',()=>assert.equal(orbitPeriod(15),96));
+test('horizon radius increases with altitude',()=>assert.ok(getHorizonRadius(550)>getHorizonRadius(400)));
+test('great circle shape finite and closed',()=>{const v=greatCircleCircle(10,40,160); assert.equal(v.length,65);assert.ok(v.every(p=>p.every(Number.isFinite)));assert.deepEqual(v[0],v[v.length-1]);});
+test('downsample evenly and respects cap',()=>{const v=downsample(Array.from({length:100},(_,i)=>i),10);assert.equal(v.length,10);assert.ok(v[0]>0);assert.ok(v[9]<100);});
+test('owner resolution does not silently fabricate metadata',()=>{assert.equal(resolveOwner('US'),'United States'); assert.equal(resolveOwner('XZY'),'XZY (SATCAT code)');assert.equal(resolveOwner(''),'Not available');});
+test('only documented sensor swaths are listed',()=>{assert.equal(documentedSwath('SENTINEL-2A'),290);assert.equal(documentedSwath('LANDSAT 9'),185);assert.equal(documentedSwath('STARLINK-999'),null);});
+test('name-inferred operator is clearly labeled',()=>assert.match(inferOperator('STARLINK-1'),/name-derived/));
+test('epoch missing is unknown',()=>assert.equal(epochAgeHours(null),null));
