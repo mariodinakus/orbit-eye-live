@@ -16,11 +16,10 @@
 
 ## Deploy on Vercel
 
-1. Create a **new GitHub repository** (e.g. `orbit-eye`).
-2. Extract the ZIP archive and upload **the contents of `orbit-eye-live/` into the repository root**. Do not upload only the ZIP itself.
-3. On Vercel, choose **Add New > Project > Import Git Repository**.
-4. Leave **Framework Preset: Other** and **Build Command: empty**. Set **Output Directory: empty/default**. The root `index.html` is a static site. Vercel deploys `/api/orbits.js` and `/api/catalog.js` as serverless functions.
-5. Deploy. **No environment variable / API key is required.**
+1. In Vercel, choose **Add New > Project > Import Git Repository**.
+2. Select **`mariodinakus/orbit-eye-live`**, branch **`main`**. The **complete source project** is already committed in the repository root; you do not need to upload a ZIP or replace `index.html`.
+3. Keep **Framework Preset: Other**, **Build Command: empty**, **Output Directory: empty/default** and **Root Directory: `./`**. Vercel serves the static site and deploys `/api/orbits.js` and `/api/catalog.js` as serverless functions.
+4. Click **Deploy**. **No environment variable / API key is required.**
 
 ### Local preview
 
@@ -63,7 +62,7 @@ src/app.js             Globe, orbital engine, map, bilingual UI, controls
 src/utils.mjs          Geometry, data mapping, owner codes, inference metadata
 api/orbits.js          CelesTrak GP/OMM Vercel proxy
 api/catalog.js         CelesTrak SATCAT Vercel proxy
-api/_shared.js         Allowlist, error handling, long CDN cache
+lib/shared.js          Allowlist, error handling, long CDN cache
 vercel.json            Security headers
 ```
 
